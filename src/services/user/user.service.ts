@@ -1,8 +1,41 @@
 import { UserRegisterRequestDTO__Output } from '@pb/user/UserRegisterRequestDTO';
+import { UserChangePasswordRequestDTO__Output } from '@pb/user/UserChangePasswordRequestDTO';
+import { UserChangePasswordFromForgotPasswordRequestDTO__Output } from '@pb/user/UserChangePasswordFromForgotPasswordRequestDTO';
 import { AppDataSource, User } from '../../database';
 import * as argon2 from 'argon2';
+import * as ms from 'ms';
+import { FindOptionsWhere } from 'typeorm';
+import { randomInteger } from '../../util';
+import { UserFineOneDTO } from '@pb/user/UserFineOneDTO';
+import { UserForgotPasswordRequestDTO } from '@pb/user/UserForgotPasswordRequestDTO';
 
 const userRepository = AppDataSource.getRepository(User);
+
+const helpers = {
+  async find_user_by(where: FindOptionsWhere<User>) {
+    const user = await userRepository.findOneBy(where);
+    if (!user) {
+      throw new Error('User not found');
+    }
+    return user;
+  },
+
+  async verify_password(hashed: string, plain: string) {
+    const valid = await argon2.verify(hashed, plain);
+    if (!valid) {
+      throw new Error('Password is invalid');
+    }
+    return valid;
+  },
+
+  generate_code(check: number): number {
+    const code = randomInteger(100_000, 999_999);
+    if (code === check) {
+      return this.generate_code(check);
+    }
+    return code;
+  },
+};
 
 export const user_service = {
   async register_user(params: UserRegisterRequestDTO__Output) {
@@ -24,18 +57,109 @@ export const user_service = {
   async login_user(params: UserRegisterRequestDTO__Output) {
     const { email, password } = params;
 
-    const user = await userRepository.findOneBy({ email });
-    if (!user) {
-      throw new Error('User not found');
-    }
-
-    const valid = await argon2.verify(user.password, password);
-    if (!valid) {
-      throw new Error('Password is invalid');
-    }
-
+    const user = await helpers.find_user_by({ email });
+    await helpers.verify_password(user.password, password);
     delete user.password;
 
     return user;
+  },
+
+  async change_password(params: UserChangePasswordRequestDTO__Output) {
+    const { id, currentPassword, password } = params;
+
+    const user = await helpers.find_user_by({ id });
+    await helpers.verify_password(user.password, currentPassword);
+    user.password = password;
+    const _user = await AppDataSource.manager.save(user);
+
+    delete _user.password;
+    return _user;
+  },
+
+  async forgot_password(params: UserForgotPasswordRequestDTO) {
+    const { email } = params;
+
+    const user = await helpers.find_user_by({ email });
+
+    const now = Date.now();
+
+    /** Reject if more than 3 requests have been sent in the last 24 hours. */
+    const twenty_four_hours_ago = now - ms('1 day');
+    const last_three_send_times = user.verify_code_send_time?.filter(
+      (value) => twenty_four_hours_ago <= value * 1000,
+    );
+    if (last_three_send_times.length > 3) {
+      throw new Error('Too many request');
+    }
+
+    if (last_three_send_times.length === 0) {
+      user.verify_code_send_time = [];
+      user.invalid_verify_code = 0;
+    }
+
+    const last_send_time = last_three_send_times?.[0] || 0;
+    const time_diff = now - last_send_time * 1000;
+
+    /** If last request was sent within the last 1 minute, do nothing. */
+    if (time_diff < ms('1 minutes')) {
+      console.log('last request was sent within the last 1 minute');
+      return true;
+    }
+
+    const current = Math.floor(Date.now() / 1000);
+
+    /** If last request was sent between 1 minute and 5 minute, send same code. */
+    if (ms('1 minutes') < time_diff && time_diff < ms('5 minutes')) {
+      console.log('last request was sent between 1 minute and 5 minute');
+      user.verify_code_send_time.unshift(current);
+      await AppDataSource.manager.save(user);
+      // TODO send mail
+      return;
+    }
+
+    const code = helpers.generate_code(user.verify_code);
+    user.verify_code_send_time.unshift(current);
+    user.verify_code = code;
+    await AppDataSource.manager.save(user);
+
+    console.log(code);
+
+    // TODO send mail
+    return true;
+  },
+
+  async change_password_from_forgot(
+    params: UserChangePasswordFromForgotPasswordRequestDTO__Output,
+  ) {
+    const { password, code, id } = params;
+
+    const user = await helpers.find_user_by({ id });
+
+    if (user.invalid_verify_code > 3) {
+      throw new Error('Please re-send email request');
+    }
+
+    if (user.verify_code !== code) {
+      user.invalid_verify_code++;
+      await AppDataSource.manager.save(user);
+      throw new Error('Code is invalid');
+    }
+
+    await helpers
+      .verify_password(user.password, password)
+      .then(() => {
+        throw new Error('New password can not be equal with current password');
+      })
+      .catch();
+
+    user.password = await argon2.hash(password);
+    const _user = await AppDataSource.manager.save(user);
+
+    delete _user.password;
+    return _user;
+  },
+
+  find_one(params: UserFineOneDTO) {
+    return helpers.find_user_by(params);
   },
 };

@@ -1,6 +1,6 @@
-import * as bytes from 'bytes';
 import * as argon2 from 'argon2';
-import { Entity, PrimaryGeneratedColumn, Column, BeforeInsert } from 'typeorm';
+import * as bytes from 'bytes';
+import { BeforeInsert, Column, Entity, PrimaryGeneratedColumn } from 'typeorm';
 
 @Entity({ name: 'User' })
 export class User {

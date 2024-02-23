@@ -8,8 +8,25 @@ type SubtypeConstructor<Constructor extends new (...args: any) => any, Subtype> 
 };
 
 export interface ProtoGrpcType {
+  google: {
+    protobuf: {
+      BoolValue: MessageTypeDefinition
+      BytesValue: MessageTypeDefinition
+      DoubleValue: MessageTypeDefinition
+      FloatValue: MessageTypeDefinition
+      Int32Value: MessageTypeDefinition
+      Int64Value: MessageTypeDefinition
+      StringValue: MessageTypeDefinition
+      UInt32Value: MessageTypeDefinition
+      UInt64Value: MessageTypeDefinition
+    }
+  }
   user: {
     User: MessageTypeDefinition
+    UserChangePasswordFromForgotPasswordRequestDTO: MessageTypeDefinition
+    UserChangePasswordRequestDTO: MessageTypeDefinition
+    UserFineOneDTO: MessageTypeDefinition
+    UserForgotPasswordRequestDTO: MessageTypeDefinition
     UserRegisterRequestDTO: MessageTypeDefinition
     UserRegisterResponseDTO: MessageTypeDefinition
     UserService: SubtypeConstructor<typeof grpc.Client, _user_UserServiceClient> & { service: _user_UserServiceDefinition }

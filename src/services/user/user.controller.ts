@@ -1,21 +1,25 @@
 import { UserServiceHandlers } from '@pb/user/UserService';
 import { user_service } from './user.service';
 
+const handler = async (req, res, func, wrapper = false) => {
+  try {
+    const response = await func(req.request);
+    if (wrapper) {
+      return res(null, { value: response });
+    }
+    res(null, response);
+  } catch (error) {
+    res({ message: error.message, name: error.name });
+  }
+};
+
 export const user_contoller: UserServiceHandlers = {
-  RegisterUser: async (req, res) => {
-    try {
-      const response = await user_service.register_user(req.request);
-      res(null, response);
-    } catch (error) {
-      res({ message: error.message, name: error.name || error.message });
-    }
-  },
-  LoginUser: async (req, res) => {
-    try {
-      const response = await user_service.login_user(req.request);
-      res(null, response);
-    } catch (error) {
-      res({ message: error.message, name: error.name || error.message });
-    }
-  },
+  RegisterUser: (req, res) => handler(req, res, user_service.register_user),
+  LoginUser: (req, res) => handler(req, res, user_service.login_user),
+  ChangePassword: (req, res) => handler(req, res, user_service.change_password),
+  ForgotPassword: (req, res) =>
+    handler(req, res, user_service.forgot_password, true),
+  ChangePasswordFromForgot: (req, res) =>
+    handler(req, res, user_service.change_password_from_forgot),
+  FindOne: (req, res) => handler(req, res, user_service.find_one),
 };
