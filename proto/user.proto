@@ -1,0 +1,34 @@
+syntax = "proto3";
+
+package user;
+
+message User {
+  int32 id = 1;
+  string email = 2;
+  string password = 3;
+  optional int32 verify_code = 4;
+  int32 invalid_verify_code = 5;
+  repeated int32 verify_code_send_time = 6;
+  int32 used_size = 7;
+  int32 total_drive = 8;
+}
+
+service UserService{
+  rpc RegisterUser(UserRegisterRequestDTO) returns (UserRegisterResponseDTO) {}
+  rpc LoginUser(UserRegisterRequestDTO) returns (UserRegisterResponseDTO) {}
+}
+
+message UserRegisterRequestDTO {
+  string email = 1;
+  string password = 2;
+}
+
+message UserRegisterResponseDTO {
+  int32 id = 1;
+  string email = 2;
+  optional int32 verify_code = 3;
+  int32 invalid_verify_code = 4;
+  repeated int32 verify_code_send_time = 5;
+  int32 used_size = 6;
+  int32 total_drive = 7;
+}
