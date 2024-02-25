@@ -1,15 +1,17 @@
 import { UserRegisterRequestDTO__Output } from '@pb/user/UserRegisterRequestDTO';
 import { UserChangePasswordRequestDTO__Output } from '@pb/user/UserChangePasswordRequestDTO';
 import { UserChangePasswordFromForgotPasswordRequestDTO__Output } from '@pb/user/UserChangePasswordFromForgotPasswordRequestDTO';
-import { AppDataSource, User } from '../../database';
+import { Admin, AppDataSource, User } from '../../database';
 import * as argon2 from 'argon2';
 import * as ms from 'ms';
 import { FindOptionsWhere } from 'typeorm';
 import { randomInteger } from '../../util';
 import { UserFineOneDTO } from '@pb/user/UserFineOneDTO';
 import { UserForgotPasswordRequestDTO } from '@pb/user/UserForgotPasswordRequestDTO';
+import { UInt32Value__Output } from '@pb/google/protobuf/UInt32Value';
 
 const userRepository = AppDataSource.getRepository(User);
+const adminRepository = AppDataSource.getRepository(Admin);
 
 const helpers = {
   async find_user_by(where: FindOptionsWhere<User>) {
@@ -161,5 +163,11 @@ export const user_service = {
 
   find_one(params: UserFineOneDTO) {
     return helpers.find_user_by(params);
+  },
+
+  async is_admin(params: UInt32Value__Output) {
+    const { value } = params;
+    const user = await adminRepository.findOneBy({ id: value });
+    return !!user;
   },
 };
