@@ -71,9 +71,8 @@ export const user_service = {
 
     const user = await helpers.find_user_by({ id });
     await helpers.verify_password(user.password, currentPassword);
-    user.password = password;
+    user.password = await argon2.hash(password);
     const _user = await AppDataSource.manager.save(user);
-
     delete _user.password;
     return _user;
   },
