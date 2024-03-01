@@ -7,8 +7,10 @@ services:
       context: .
     environment:
       NODE_ENV: production
+      POSTGRES_URI: postgresql://postgres_user:postgres_pass@host.docker.internal:10002/vscr-cdn-user-ms
+      PORT: 3000
     ports:
-      - 20001:3000
+      - 20002:3000
     volumes:
       - user_ms_volume:/home/node/app
     depends_on:
@@ -18,13 +20,13 @@ services:
     image: postgres:13.14-alpine
     restart: always
     ports:
-      - 10001:5432
+      - 10002:5432
     volumes:
       - user_ms_postgres_volume:/var/lib/postgresql/data
     environment:
       - POSTGRES_PASSWORD=postgres_pass
       - POSTGRES_USER=postgres_user
-      - POSTGRES_DB=postgres_db
+      - POSTGRES_DB=vscr-cdn-user-ms
 
 volumes:
   user_ms_volume:

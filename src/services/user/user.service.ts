@@ -67,10 +67,10 @@ export const user_service = {
   },
 
   async change_password(params: UserChangePasswordRequestDTO__Output) {
-    const { id, currentPassword, password } = params;
+    const { id, current_password, password } = params;
 
     const user = await helpers.find_user_by({ id });
-    await helpers.verify_password(user.password, currentPassword);
+    await helpers.verify_password(user.password, current_password);
     user.password = await argon2.hash(password);
     const _user = await AppDataSource.manager.save(user);
     delete _user.password;
@@ -161,6 +161,7 @@ export const user_service = {
   },
 
   find_one(params: UserFineOneDTO__Output) {
+    //@ts-ignore
     return helpers.find_user_by(params);
   },
 
