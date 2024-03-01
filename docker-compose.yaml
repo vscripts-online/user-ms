@@ -11,10 +11,10 @@ services:
       PORT: 3000
     ports:
       - 20002:3000
-    volumes:
-      - user_ms_volume:/home/node/app
     depends_on:
       - user_ms_postgres
+    extra_hosts:
+      - 'host.docker.internal:host-gateway'
 
   user_ms_postgres:
     image: postgres:13.14-alpine
@@ -29,5 +29,4 @@ services:
       - POSTGRES_DB=vscr-cdn-user-ms
 
 volumes:
-  user_ms_volume:
   user_ms_postgres_volume:
