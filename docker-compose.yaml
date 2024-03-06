@@ -9,6 +9,7 @@ services:
       NODE_ENV: production
       POSTGRES_URI: postgresql://postgres_user:postgres_pass@host.docker.internal:10002/vscr-cdn-user-ms
       PORT: 3000
+      QUEUE_MS_URI: host.docker.internal:20001
     ports:
       - 20002:3000
     depends_on:

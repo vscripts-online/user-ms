@@ -7,8 +7,10 @@ import { UserRegisterRequestDTO__Output } from '@pb/user/UserRegisterRequestDTO'
 import * as argon2 from 'argon2';
 import * as ms from 'ms';
 import { FindOptionsWhere } from 'typeorm';
+import { queue_ms_client } from '../../config';
 import { Admin, AppDataSource, User } from '../../database';
 import { randomInteger } from '../../util';
+import { ForgotPasswordMailParams__Output } from '@pb/queue/ForgotPasswordMailParams';
 
 const userRepository = AppDataSource.getRepository(User);
 const adminRepository = AppDataSource.getRepository(Admin);
@@ -36,6 +38,19 @@ const helpers = {
       return this.generate_code(check);
     }
     return code;
+  },
+
+  async send_forgot_password(params: ForgotPasswordMailParams__Output) {
+    return new Promise((resolve, reject) => {
+      queue_ms_client.SendForgotPasswordMail(params, (err, value) => {
+        if (err) {
+          reject(err);
+          return;
+        }
+
+        resolve(value);
+      });
+    });
   },
 };
 
@@ -104,7 +119,7 @@ export const user_service = {
     /** If last request was sent within the last 1 minute, do nothing. */
     if (time_diff < ms('1 minutes')) {
       console.log('last request was sent within the last 1 minute');
-      return true;
+      return { success: true };
     }
 
     const current = Math.floor(Date.now() / 1000);
@@ -114,8 +129,14 @@ export const user_service = {
       console.log('last request was sent between 1 minute and 5 minute');
       user.verify_code_send_time.unshift(current);
       await AppDataSource.manager.save(user);
-      // TODO send mail
-      return;
+
+      const success = await helpers.send_forgot_password({
+        code: user.verify_code,
+        email: user.email,
+        id: user.id,
+      });
+
+      return { success, code: user.verify_code };
     }
 
     const code = helpers.generate_code(user.verify_code);
@@ -123,10 +144,13 @@ export const user_service = {
     user.verify_code = code;
     await AppDataSource.manager.save(user);
 
-    console.log(code);
+    const success = await helpers.send_forgot_password({
+      code,
+      email: user.email,
+      id: user.id,
+    });
 
-    // TODO send mail
-    return true;
+    return { success, code };
   },
 
   async change_password_from_forgot(

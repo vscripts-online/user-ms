@@ -9,6 +9,7 @@ const handler = async (req, res, func, wrapper = false) => {
     }
     res(null, response);
   } catch (error) {
+    console.log('handler error', error);
     res({ message: error.message, name: error.name });
   }
 };
@@ -17,8 +18,7 @@ export const user_contoller: UserServiceHandlers = {
   RegisterUser: (req, res) => handler(req, res, user_service.register_user),
   LoginUser: (req, res) => handler(req, res, user_service.login_user),
   ChangePassword: (req, res) => handler(req, res, user_service.change_password),
-  ForgotPassword: (req, res) =>
-    handler(req, res, user_service.forgot_password, true),
+  ForgotPassword: (req, res) => handler(req, res, user_service.forgot_password),
   ChangePasswordFromForgot: (req, res) =>
     handler(req, res, user_service.change_password_from_forgot),
   FindOne: (req, res) => handler(req, res, user_service.find_one),
