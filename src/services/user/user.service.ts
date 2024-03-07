@@ -208,14 +208,13 @@ export const user_service = {
     params: PaginationRequestDTO__Output,
     res: ServerWritableStreamImpl<PaginationRequestDTO__Output, User>,
   ) {
-    console.log(res);
     const { limit, skip } = params;
     const users = await userRepository.find({
       skip,
       take: limit,
-      select: { password: false },
     });
     for (const user of users) {
+      delete user.password;
       res.write(user);
     }
     res.end();
