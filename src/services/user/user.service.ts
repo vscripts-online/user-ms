@@ -192,7 +192,7 @@ export const user_service = {
 
   async is_admin(params: UInt32Value__Output) {
     const { value } = params;
-    const user = await adminRepository.findOneBy({ id: value });
+    const user = await adminRepository.findOneBy({ user: { id: value } });
     return { value: !!user };
   },
 
