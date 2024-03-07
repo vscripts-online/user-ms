@@ -12,6 +12,8 @@ import { Admin, AppDataSource, User } from '../../database';
 import { randomInteger } from '../../util';
 import { ForgotPasswordMailParams__Output } from '@pb/queue/ForgotPasswordMailParams';
 import { UserMeRequestDTO__Output } from '@pb/user/UserMeRequestDTO';
+import { PaginationRequestDTO__Output } from '@pb/user/PaginationRequestDTO';
+import { ServerWritableStreamImpl } from '@grpc/grpc-js/build/src/server-call';
 
 const userRepository = AppDataSource.getRepository(User);
 const adminRepository = AppDataSource.getRepository(Admin);
@@ -200,5 +202,22 @@ export const user_service = {
     const { id } = params;
     const user = await helpers.find_user_by({ id });
     return user;
+  },
+
+  async get_users(
+    params: PaginationRequestDTO__Output,
+    res: ServerWritableStreamImpl<PaginationRequestDTO__Output, User>,
+  ) {
+    console.log(res);
+    const { limit, skip } = params;
+    const users = await userRepository.find({
+      skip,
+      take: limit,
+      select: { password: false },
+    });
+    for (const user of users) {
+      res.write(user);
+    }
+    res.end();
   },
 };

@@ -24,4 +24,6 @@ export const user_contoller: UserServiceHandlers = {
   FindOne: (req, res) => handler(req, res, user_service.find_one),
   IsAdmin: (req, res) => handler(req, res, user_service.is_admin),
   me: (req, res) => handler(req, res, user_service.me),
+  //@ts-ignore
+  GetUsers: (call) => user_service.get_users(call.request, call),
 };
