@@ -23,4 +23,5 @@ export const user_contoller: UserServiceHandlers = {
     handler(req, res, user_service.change_password_from_forgot),
   FindOne: (req, res) => handler(req, res, user_service.find_one),
   IsAdmin: (req, res) => handler(req, res, user_service.is_admin),
+  me: (req, res) => handler(req, res, user_service.me),
 };

@@ -11,6 +11,7 @@ import { queue_ms_client } from '../../config';
 import { Admin, AppDataSource, User } from '../../database';
 import { randomInteger } from '../../util';
 import { ForgotPasswordMailParams__Output } from '@pb/queue/ForgotPasswordMailParams';
+import { UserMeRequestDTO__Output } from '@pb/user/UserMeRequestDTO';
 
 const userRepository = AppDataSource.getRepository(User);
 const adminRepository = AppDataSource.getRepository(Admin);
@@ -193,5 +194,11 @@ export const user_service = {
     const { value } = params;
     const user = await adminRepository.findOneBy({ id: value });
     return { value: !!user };
+  },
+
+  async me(params: UserMeRequestDTO__Output) {
+    const { id } = params;
+    const user = await helpers.find_user_by({ id });
+    return user;
   },
 };
