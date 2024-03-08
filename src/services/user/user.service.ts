@@ -227,7 +227,7 @@ export const user_service = {
       { id },
       { total_drive: Number(size) },
     );
-    return Boolean(response.affected);
+    return { value: Boolean(response.affected) };
   },
 
   async increase_used_size(data: IncreaseSizeDTO__Output) {
