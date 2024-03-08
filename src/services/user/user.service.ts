@@ -221,12 +221,11 @@ export const user_service = {
     res.end();
   },
 
-  async increase_total_drive(data: IncreaseSizeDTO__Output) {
+  async set_total_drive(data: IncreaseSizeDTO__Output) {
     const { size, user: id } = data;
-    const response = await userRepository.increment(
+    const response = await userRepository.update(
       { id },
-      'total_drive' as keyof User,
-      size,
+      { total_drive: Number(size) },
     );
     return Boolean(response.affected);
   },

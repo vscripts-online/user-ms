@@ -26,8 +26,7 @@ export const user_contoller: UserServiceHandlers = {
   me: (req, res) => handler(req, res, user_service.me),
   //@ts-ignore
   GetUsers: (call) => user_service.get_users(call.request, call),
-  IncreaseTotalDrive: (req, res) =>
-    handler(req, res, user_service.increase_total_drive),
+  SetTotalDrive: (req, res) => handler(req, res, user_service.set_total_drive),
   IncreaseUsedSize: (req, res) =>
     handler(req, res, user_service.increase_used_size),
 };
