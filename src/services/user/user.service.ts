@@ -14,6 +14,7 @@ import { ForgotPasswordMailParams__Output } from '@pb/queue/ForgotPasswordMailPa
 import { UserMeRequestDTO__Output } from '@pb/user/UserMeRequestDTO';
 import { PaginationRequestDTO__Output } from '@pb/user/PaginationRequestDTO';
 import { ServerWritableStreamImpl } from '@grpc/grpc-js/build/src/server-call';
+import { IncreaseSizeDTO__Output } from '@pb/user/IncreaseSizeDTO';
 
 const userRepository = AppDataSource.getRepository(User);
 const adminRepository = AppDataSource.getRepository(Admin);
@@ -218,5 +219,25 @@ export const user_service = {
       res.write(user);
     }
     res.end();
+  },
+
+  async increase_total_drive(data: IncreaseSizeDTO__Output) {
+    const { size, user: id } = data;
+    const response = await userRepository.increment(
+      { id },
+      'total_drive' as keyof User,
+      size,
+    );
+    return Boolean(response.affected);
+  },
+
+  async increase_used_size(data: IncreaseSizeDTO__Output) {
+    const { size, user: id } = data;
+    const response = await userRepository.increment(
+      { id },
+      'used_size' as keyof User,
+      size,
+    );
+    return Boolean(response.affected);
   },
 };
