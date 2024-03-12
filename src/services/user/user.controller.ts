@@ -29,4 +29,5 @@ export const user_contoller: UserServiceHandlers = {
   SetTotalDrive: (req, res) => handler(req, res, user_service.set_total_drive),
   IncreaseUsedSize: (req, res) =>
     handler(req, res, user_service.increase_used_size),
+  UsersCount: (req, res) => handler(req, res, user_service.users_count),
 };

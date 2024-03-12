@@ -12,7 +12,7 @@ import { Admin, AppDataSource, User } from '../../database';
 import { randomInteger } from '../../util';
 import { ForgotPasswordMailParams__Output } from '@pb/queue/ForgotPasswordMailParams';
 import { UserMeRequestDTO__Output } from '@pb/user/UserMeRequestDTO';
-import { PaginationRequestDTO__Output } from '@pb/user/PaginationRequestDTO';
+import { GetUsersRequestDTO__Output } from '@pb/user/GetUsersRequestDTO';
 import { ServerWritableStreamImpl } from '@grpc/grpc-js/build/src/server-call';
 import { IncreaseSizeDTO__Output } from '@pb/user/IncreaseSizeDTO';
 
@@ -206,13 +206,14 @@ export const user_service = {
   },
 
   async get_users(
-    params: PaginationRequestDTO__Output,
-    res: ServerWritableStreamImpl<PaginationRequestDTO__Output, User>,
+    params: GetUsersRequestDTO__Output,
+    res: ServerWritableStreamImpl<GetUsersRequestDTO__Output, User>,
   ) {
-    const { limit, skip } = params;
+    const { limit, skip, sort_by } = params;
     const users = await userRepository.find({
       skip,
       take: limit,
+      order: { [sort_by]: 'ASC' },
     });
     for (const user of users) {
       delete user.password;
@@ -238,5 +239,10 @@ export const user_service = {
       size,
     );
     return Boolean(response.affected);
+  },
+
+  async users_count() {
+    const count = await userRepository.count();
+    return { value: count };
   },
 };
