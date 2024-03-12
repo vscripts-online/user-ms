@@ -24,8 +24,7 @@
       "start": "ts-node src/index.ts",
       "start:prod": "node dist/src/index.js",
       "build": "tsc",
-      "build:proto": "sh build_proto.sh",
-      "update:proto": "sh update_proto.sh",
+      "proto": "sh build_proto.sh",
       "typeorm": "typeorm-ts-node-commonjs"
    }
 }

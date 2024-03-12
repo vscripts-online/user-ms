@@ -22,10 +22,10 @@ export class User {
   @Column('int', { array: true, nullable: false, default: [] })
   verify_code_send_time: number[];
 
-  @Column({ nullable: false, default: 0 })
+  @Column('bigint', { nullable: false, default: 0 })
   used_size: number;
 
-  @Column({ nullable: false, default: bytes('500 mb') })
+  @Column('bigint', { nullable: false, default: bytes('500 mb') })
   total_drive: number;
 
   @BeforeInsert()
